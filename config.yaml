@@ -2,7 +2,7 @@ samplesheet:
     samplesheet.tsv
 
 workdir:
-    /data/yuk5/project/1.FPDMM/04.WGS/Batch_220608
+    /data/yuk5/project/2.iPSC_MutSeq/11.Linzhao
 
 references:
     species:  homo_sapiens
@@ -48,7 +48,7 @@ modules:
     strelka: strelka/2.9.0
     gatk: GATK/4.2.0.0
     lofreq: lofreq/2.1.5
-    muse: muse/1.0~rc-c
+    muse: muse/2.0
     varscan: varscan/2.4.3
     canvas: Canvas/1.40
 bins:

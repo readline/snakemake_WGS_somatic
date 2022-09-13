@@ -227,25 +227,24 @@ rule muse_som:
         bam1=lambda wildcards: "02.Alignment/Level3/{}/{}.BQSR.bam".format(somdic[wildcards.som][0], somdic[wildcards.som][0]),
         bam0=lambda wildcards: "02.Alignment/Level3/{}/{}.BQSR.bam".format(somdic[wildcards.som][1], somdic[wildcards.som][1]),
     params:
-        bed=config['references']['wgsscatter']+'/temp_{itv}_of_50.bed',
-        prefix="11.Somatic.MuSE/{som}/itv/{itv}",
+        prefix="11.Somatic.MuSE/{som}/{som}",
     output:
-        vcf="11.Somatic.MuSE/{som}/itv/{itv}.MuSE.vcf.gz",
+        vcf="11.Somatic.MuSE/{som}/{som}.MuSE.vcf.gz",
     log:
-        out = snakedir+"/logs/D05.som_muse/{som}.{itv}.o",
-        err = snakedir+"/logs/D05.som_muse/{som}.{itv}.e",
-    threads:  4
+        out = snakedir+"/logs/D05.som_muse/{som}.o",
+        err = snakedir+"/logs/D05.som_muse/{som}.e",
+    threads:  36
     resources:
-        mem  = '16g',
+        mem  = '48g',
         extra = ' --gres=lscratch:20 ',
     shell:
         '''module load {config[modules][muse]} {config[modules][samtools]}
         MuSE call \
           -f {config[references][fasta]} \
+          -n {threads} \
+          -O {params.prefix} \
           {input.bam1} \
-          {input.bam0} \
-          -l {params.bed} \
-          -O {params.prefix} > {log.out} 2> {log.err}
+          {input.bam0} > {log.out} 2> {log.err}
         MuSE sump \
           -I {params.prefix}.MuSE.txt \
           -G \
@@ -253,24 +252,6 @@ rule muse_som:
           -O {params.prefix}.MuSE.vcf >> {log.out} 2>> {log.err}
         bgzip {params.prefix}.MuSE.vcf
         tabix -p vcf {output.vcf}'''
-        
-rule merge_muse:
-    input:
-        vcf1=expand("11.Somatic.MuSE/{{som}}/itv/{itv}.MuSE.vcf.gz", itv=itv4),
-    output:
-        vcf1="11.Somatic.MuSE/{som}/{som}.MuSE.vcf.gz",
-    log:
-        out = snakedir+"/logs/D05.merge_muse/{som}.o",
-        err = snakedir+"/logs/D05.merge_muse/{som}.e",
-    threads:  2
-    resources:
-        mem  = '16g',
-        extra = ' --gres=lscratch:10 ',
-    run:
-        inputvcfs1 = ' '.join(" {}".format(i) for i in input.vcf1)
-        shell('''
-        ls {inputvcfs1} > {output.vcf1}
-        ''')
         
 rule varscan_som:
     input:
